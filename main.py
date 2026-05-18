@@ -31,13 +31,13 @@ class PulseDesk:
         self.email_sender = DigestSender()
         self.run_count = 0
     
-    def run_digest(self):
+    def run_digest(self, edition: str = "Morning"):
         """Execute the full digest pipeline"""
         self.run_count += 1
         start_time = datetime.now()
         
         logger.info(f"{'='*60}")
-        logger.info(f"PULSEDESK RUN #{self.run_count} - {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        logger.info(f"PULSEDESK {edition.upper()} EDITION - Run #{self.run_count}")
         logger.info(f"{'='*60}")
         
         try:
@@ -63,16 +63,16 @@ class PulseDesk:
             
             # Step 3: Build and send
             logger.info("STEP 3: Building and sending digest...")
-            message = self.email_builder.build_digest(sorted_summaries[:8])
+            message = self.email_builder.build_digest(sorted_summaries[:12], edition=edition)
             success = self.email_sender.send(message)
             
             elapsed = (datetime.now() - start_time).seconds
             
             if success:
-                logger.info(f"Digest delivered in {elapsed}s | {len(articles)} scraped | {len(sorted_summaries)} summarized")
+                logger.info(f"{edition} digest delivered in {elapsed}s | {len(articles)} scraped | {len(sorted_summaries)} summarized")
                 return True
             else:
-                logger.error(f"Digest failed after {elapsed}s")
+                logger.error(f"{edition} digest failed after {elapsed}s")
                 return False
         
         except Exception as e:
@@ -81,12 +81,22 @@ class PulseDesk:
             traceback.print_exc()
             return False
     
-    def start_scheduler(self, send_time: str = "07:00"):
-        """Schedule daily digest at specified time"""
-        schedule.every().day.at(send_time).do(self.run_digest)
+    def run_morning(self):
+        """Morning edition"""
+        self.run_digest(edition="Morning")
+    
+    def run_evening(self):
+        """Evening edition"""
+        self.run_digest(edition="Evening")
+    
+    def start_scheduler(self, morning_time: str = "07:00", evening_time: str = "18:00"):
+        """Schedule twice-daily digest"""
+        schedule.every().day.at(morning_time).do(self.run_morning)
+        schedule.every().day.at(evening_time).do(self.run_evening)
         
         logger.info(f"PulseDesk scheduler started")
-        logger.info(f"Digest scheduled for {send_time} daily")
+        logger.info(f"Morning digest: {morning_time}")
+        logger.info(f"Evening digest: {evening_time}")
         logger.info(f"Recipient: {os.getenv('RECIPIENT_EMAIL')}")
         logger.info(f"Press Ctrl+C to stop\n")
         
@@ -110,6 +120,7 @@ def main():
     ╔═══════════════════════════════════════════════╗
     ║              PULSEDESK v1.0                   ║
     ║     AI-Powered Daily Intelligence Digest      ║
+    ║        Morning & Evening Editions             ║
     ╚═══════════════════════════════════════════════╝
     """)
     
@@ -117,35 +128,42 @@ def main():
     
     if len(sys.argv) > 1:
         if sys.argv[1] == "--now":
-            print("Running digest immediately...\n")
-            pulse.run_digest()
+            edition = sys.argv[2] if len(sys.argv) > 2 else "Morning"
+            print(f"Running {edition} digest immediately...\n")
+            pulse.run_digest(edition=edition)
         
         elif sys.argv[1] == "--schedule":
-            send_time = sys.argv[2] if len(sys.argv) > 2 else "07:00"
-            pulse.start_scheduler(send_time)
+            morning = sys.argv[2] if len(sys.argv) > 2 else "07:00"
+            evening = sys.argv[3] if len(sys.argv) > 3 else "18:00"
+            pulse.start_scheduler(morning, evening)
         
         elif sys.argv[1] == "--help":
             print("Usage:")
-            print("  py main.py --now              Run digest immediately")
-            print("  py main.py --schedule          Schedule daily at 07:00")
-            print("  py main.py --schedule 09:00    Schedule daily at custom time")
-            print("  py main.py --help              Show this help")
+            print("  py main.py --now                    Run Morning digest now")
+            print("  py main.py --now Evening             Run Evening digest now")
+            print("  py main.py --schedule                Schedule at 07:00 & 18:00")
+            print("  py main.py --schedule 06:00 19:00    Custom morning & evening times")
+            print("  py main.py --help                    Show this help")
     else:
         print("What would you like to do?\n")
-        print("  1. Send digest now")
-        print("  2. Schedule daily digest (default: 7:00 AM)")
-        print("  3. Schedule at custom time")
+        print("  1. Send Morning digest now")
+        print("  2. Send Evening digest now")
+        print("  3. Schedule twice daily (7:00 AM & 6:00 PM)")
+        print("  4. Schedule at custom times")
         print("")
         
-        choice = input("Enter choice (1/2/3): ").strip()
+        choice = input("Enter choice (1/2/3/4): ").strip()
         
         if choice == "1":
-            pulse.run_digest()
+            pulse.run_digest(edition="Morning")
         elif choice == "2":
-            pulse.start_scheduler("07:00")
+            pulse.run_digest(edition="Evening")
         elif choice == "3":
-            custom_time = input("Enter time (HH:MM, 24hr format): ").strip()
-            pulse.start_scheduler(custom_time)
+            pulse.start_scheduler("07:00", "18:00")
+        elif choice == "4":
+            morning = input("Morning time (HH:MM, 24hr): ").strip()
+            evening = input("Evening time (HH:MM, 24hr): ").strip()
+            pulse.start_scheduler(morning, evening)
         else:
             print("Invalid choice")
 

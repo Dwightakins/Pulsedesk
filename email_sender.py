@@ -27,12 +27,29 @@ class DigestEmailBuilder:
         self.config = EmailConfig()
         self.date_str = datetime.now().strftime('%A, %B %d, %Y')
     
-    def _build_html(self, summaries: List) -> str:
+    def _build_html(self, summaries: List, edition: str = "Morning") -> str:
+        edition_emoji = "☀️" if edition == "Morning" else "🌙"
+        edition_tagline = "Start your day informed" if edition == "Morning" else "Catch up before you clock out"
+        
         articles_html = ""
         for i, summary in enumerate(summaries, 1):
-            relevance_bar = int(summary.relevance_score * 10)
-            bar_filled = "█" * relevance_bar
-            bar_empty = "░" * (10 - relevance_bar)
+            category_colors = {
+                'Tech': ('#e3f2fd', '#1565c0'),
+                'Business': ('#e8f5e9', '#2e7d32'),
+                'Finance': ('#fff3e0', '#e65100'),
+                'Entertainment': ('#f3e5f5', '#7b1fa2')
+            }
+            
+            cat = getattr(summary, 'source', '')
+            bg_color, text_color = category_colors.get('Tech', ('#f5f5f5', '#333333'))
+            
+            # Try to detect category from source name
+            for cat_name, colors in category_colors.items():
+                if hasattr(summary, 'source'):
+                    source_lower = summary.source.lower()
+                    if cat_name.lower() in source_lower:
+                        bg_color, text_color = colors
+                        break
             
             articles_html += f"""
             <tr>
@@ -106,7 +123,8 @@ class DigestEmailBuilder:
                             <tr>
                                 <td style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); padding: 30px; text-align: center;">
                                     <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 800; letter-spacing: 1px;">PULSEDESK</h1>
-                                    <p style="color: #a8b2d1; margin: 8px 0 0 0; font-size: 13px; letter-spacing: 2px; text-transform: uppercase;">Daily Intelligence Digest</p>
+                                    <p style="color: #a8b2d1; margin: 8px 0 0 0; font-size: 14px; letter-spacing: 1px;">{edition_emoji} {edition} Edition</p>
+                                    <p style="color: #8892b0; margin: 4px 0 0 0; font-size: 12px; font-style: italic;">{edition_tagline}</p>
                                 </td>
                             </tr>
                             
@@ -130,7 +148,7 @@ class DigestEmailBuilder:
                                 <td style="background-color: #1a1a2e; padding: 25px 30px; text-align: center;">
                                     <p style="color: #a8b2d1; font-size: 12px; margin: 0; line-height: 1.6;">
                                         Powered by PulseDesk | AI-curated business intelligence<br>
-                                        Delivered fresh every morning
+                                        Delivered fresh every morning and evening
                                     </p>
                                 </td>
                             </tr>
@@ -144,13 +162,13 @@ class DigestEmailBuilder:
         """
         return html
     
-    def build_digest(self, summaries: List) -> MIMEMultipart:
+    def build_digest(self, summaries: List, edition: str = "Morning") -> MIMEMultipart:
         msg = MIMEMultipart('alternative')
-        msg['Subject'] = f"PulseDesk | Your Daily Digest - {self.date_str}"
+        msg['Subject'] = f"PulseDesk {edition} Edition | {self.date_str}"
         msg['From'] = f"PulseDesk <{self.config.SENDER}>"
         msg['To'] = self.config.RECIPIENT
         
-        html_content = self._build_html(summaries)
+        html_content = self._build_html(summaries, edition=edition)
         msg.attach(MIMEText(html_content, 'html'))
         
         return msg
@@ -205,7 +223,7 @@ if __name__ == "__main__":
     # Step 3: Build and send email
     print("STEP 3: Building and sending digest...")
     builder = DigestEmailBuilder()
-    message = builder.build_digest(sorted_summaries[:8])
+    message = builder.build_digest(sorted_summaries[:8], edition="Evening")
     
     sender = DigestSender()
     success = sender.send(message)
