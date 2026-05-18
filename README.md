@@ -4,7 +4,7 @@
 
 An AI-powered news agent that scrapes, summarizes, and delivers curated intelligence from Nigerian business, African tech, and global art markets directly to your inbox every day.
 
-Built by [Dwight Akins](https://github.com/Dwightakins)
+Built by [Dwight Akinyanju](https://github.com/Dwightakins)
 
 ---
 
