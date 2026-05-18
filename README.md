@@ -1,78 +1,94 @@
 # PulseDesk
 
-AI-powered daily intelligence digest that scrapes, summarizes, and delivers curated news to your inbox every morning.
+**Stop checking 12 websites every morning. PulseDesk delivers your personalized business intelligence digest before your first cup of coffee.**
 
-Built with Python, Mistral AI, and BeautifulSoup.
+An AI-powered news agent that scrapes, summarizes, and delivers curated intelligence from Nigerian business, African tech, and global art markets directly to your inbox every day.
 
-## What It Does
+Built by [Dwight Akins](https://github.com/Dwightakins)
 
-PulseDesk runs on a schedule, scrapes selected news sources across business, tech, and art, feeds everything through Mistral AI to summarize and rank by relevance, then formats it into a clean branded email and delivers it to subscribers.
+---
 
-You open your inbox at 7am and instead of checking multiple websites, everything you need to know is already there.
+## The Problem
 
-## Architecture
+Founders and executives waste 30-45 minutes every morning scanning multiple news sources to stay informed. Most of what they read is noise. The signal gets buried.
 
-| File | Role |
-|------|------|
-| scrapers.py | Concurrent web scraping from 5+ sources |
-| summarizer.py | Mistral AI summarization and relevance scoring |
-| email_sender.py | HTML email builder and SMTP delivery |
-| main.py | Pipeline orchestrator with scheduler |
+## The Solution
+
+PulseDesk runs automatically at 7am, pulls the latest from 5+ curated sources, uses Mistral AI to extract only what matters, scores each story by relevance, and delivers a clean branded email digest. Zero effort from the reader.
+
+---
+
+## How It Works
+
+    Scrape (5 sources, concurrent)
+         |
+    Summarize (Mistral AI, relevance scoring 0-1)
+         |
+    Filter (only 60%+ relevance makes the cut)
+         |
+    Format (branded HTML email template)
+         |
+    Deliver (Gmail SMTP, 7am daily)
+
+**The entire pipeline runs in under 30 seconds.**
+
+---
 
 ## Sources
 
-- Nairametrics (Nigerian business and finance)
-- BusinessDay Nigeria (Nigerian economy and policy)
-- TechPoint Africa (African tech ecosystem)
-- Artnews (Global art market)
-- Art Africa Magazine (African art and culture)
+| Category | Source | Coverage |
+|----------|--------|----------|
+| Business | Nairametrics | Nigerian finance, bonds, markets |
+| Business | BusinessDay Nigeria | Economy, policy, regulation |
+| Tech | TechPoint Africa | African startups, funding, product launches |
+| Art | Artnews | Global art market, auctions, galleries |
+| Art | Art Africa Magazine | African art, exhibitions, interviews |
 
-## Setup
+Sources are configurable. Add or remove any site by editing the scraper config.
 
-**1. Clone the repo**
+---
 
-    git clone https://github.com/dwightakins/pulsedesk.git
-    cd pulsedesk
+## Architecture
 
-**2. Install dependencies**
+| File | What It Does |
+|------|-------------|
+| `scrapers.py` | Concurrent web scraping with retry logic, timeout handling, and URL normalization |
+| `summarizer.py` | Mistral AI integration for article summarization and relevance scoring |
+| `email_sender.py` | HTML email builder with branded template and SMTP delivery |
+| `main.py` | Pipeline orchestrator with CLI interface and daily scheduler |
 
+---
+
+## Quick Start
+
+**1. Clone and install**
+
+    git clone https://github.com/Dwightakins/Pulsedesk.git
+    cd Pulsedesk
     pip install -r requirements.txt
 
-**3. Create a .env file in the project root**
+**2. Configure environment**
+
+Create a `.env` file in the project root:
 
     GMAIL_USER=your_gmail@gmail.com
     GMAIL_PASSWORD=your_gmail_app_password
     RECIPIENT_EMAIL=recipient@gmail.com
     MISTRAL_API_KEY=your_mistral_api_key
 
-To get a Gmail App Password: Go to myaccount.google.com > Security > App passwords > Create one for PulseDesk.
+Gmail App Password: myaccount.google.com > Security > App passwords
 
-To get a Mistral API key: Go to console.mistral.ai and generate one.
+Mistral API Key: console.mistral.ai
 
-**4. Run immediately**
+**3. Send your first digest**
 
     python main.py --now
 
-**5. Schedule daily delivery**
+**4. Schedule daily delivery**
 
     python main.py --schedule 07:00
 
-## How It Works
-
-1. **Scrape** - Concurrent requests to all sources with retry logic and timeout handling
-2. **Summarize** - Mistral AI processes raw articles, extracts key insights, and scores relevance (0-1)
-3. **Filter** - Only articles above 60% relevance make the digest
-4. **Format** - Professional HTML email template with source badges and relevance indicators
-5. **Deliver** - SMTP delivery via Gmail with error handling and logging
-
-## Tech Stack
-
-- Python 3.10+
-- BeautifulSoup4 (web scraping)
-- Mistral AI API (summarization)
-- SMTP (email delivery)
-- Schedule (task scheduling)
-- Concurrent futures (parallel scraping)
+---
 
 ## Usage
 
@@ -81,6 +97,38 @@ To get a Mistral API key: Go to console.mistral.ai and generate one.
     python main.py --schedule 09:00   Schedule at custom time
     python main.py --help             Show help
 
+---
+
+## Tech Stack
+
+- **Python 3.10+** with concurrent futures for parallel scraping
+- **BeautifulSoup4** for HTML parsing and article extraction
+- **Mistral AI API** for intelligent summarization and relevance scoring
+- **SMTP** for email delivery via Gmail
+- **Schedule** for automated daily execution
+
+---
+
+## What Makes This Different
+
+Most newsletter tools require manual curation. PulseDesk is fully autonomous. Set it once, and it delivers value every morning without intervention. The AI doesn't just summarize, it scores relevance so the reader sees the most important stories first.
+
+---
+
+## Roadmap
+
+- [ ] Web-based signup page for subscribers
+- [ ] Admin dashboard for source and subscriber management
+- [ ] n8n/Make.com integration for visual workflow automation
+- [ ] Multi-subscriber support with personalized topic preferences
+- [ ] Weekly deep-dive research edition (premium tier)
+
+---
+
 ## License
 
 MIT
+
+---
+
+Built with purpose in Lagos, Nigeria.
