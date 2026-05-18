@@ -4,3 +4,7 @@ __pycache__/
 pulsedesk.log
 .venv/
 venv/
+
+debug.py
+hello.py
+test.py
