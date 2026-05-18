@@ -131,4 +131,4 @@ MIT
 
 ---
 
-Built with purpose in Lagos, Nigeria.
+Built with purpose.
