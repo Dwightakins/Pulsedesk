@@ -174,7 +174,15 @@ class DigestSender:
         self.subscribers_file = os.path.join(os.path.dirname(__file__), 'subscribers.json')
     
     def _load_subscribers(self) -> list:
-        """Load subscriber emails from subscribers.json"""
+        """Load subscribers from env variable or JSON file"""
+        # First check environment variable (for GitHub Actions)
+        env_subs = os.getenv('SUBSCRIBERS')
+        if env_subs:
+            subs = [s.strip() for s in env_subs.split(',') if s.strip()]
+            logger.info(f"Loaded {len(subs)} subscribers from environment")
+            return subs
+        
+        # Fallback to JSON file (for local runs)
         try:
             if os.path.exists(self.subscribers_file):
                 with open(self.subscribers_file, 'r') as f:
