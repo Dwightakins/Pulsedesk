@@ -4,6 +4,7 @@ from email.mime.text import MIMEText
 from typing import List
 from datetime import datetime
 import logging
+import json
 import os
 from dotenv import load_dotenv
 
@@ -15,13 +16,21 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
+# ============================================
+# CONFIG
+# ============================================
 class EmailConfig:
     SMTP_SERVER = "smtp.gmail.com"
-    SMTP_PORT = 587
+    SMTP_PORT = 465
     SENDER = os.getenv('GMAIL_USER')
     PASSWORD = os.getenv('GMAIL_PASSWORD')
     RECIPIENT = os.getenv('RECIPIENT_EMAIL')
 
+
+# ============================================
+# EMAIL BUILDER
+# ============================================
 class DigestEmailBuilder:
     def __init__(self):
         self.config = EmailConfig()
@@ -33,24 +42,6 @@ class DigestEmailBuilder:
         
         articles_html = ""
         for i, summary in enumerate(summaries, 1):
-            category_colors = {
-                'Tech': ('#e3f2fd', '#1565c0'),
-                'Business': ('#e8f5e9', '#2e7d32'),
-                'Finance': ('#fff3e0', '#e65100'),
-                'Entertainment': ('#f3e5f5', '#7b1fa2')
-            }
-            
-            cat = getattr(summary, 'source', '')
-            bg_color, text_color = category_colors.get('Tech', ('#f5f5f5', '#333333'))
-            
-            # Try to detect category from source name
-            for cat_name, colors in category_colors.items():
-                if hasattr(summary, 'source'):
-                    source_lower = summary.source.lower()
-                    if cat_name.lower() in source_lower:
-                        bg_color, text_color = colors
-                        break
-            
             articles_html += f"""
             <tr>
                 <td style="padding: 20px 30px; border-bottom: 1px solid #eaeaea;">
@@ -173,45 +164,78 @@ class DigestEmailBuilder:
         
         return msg
 
+
+# ============================================
+# EMAIL SENDER (multi-subscriber)
+# ============================================
 class DigestSender:
     def __init__(self):
         self.config = EmailConfig()
+        self.subscribers_file = os.path.join(os.path.dirname(__file__), 'subscribers.json')
+    
+    def _load_subscribers(self) -> list:
+        """Load subscriber emails from subscribers.json"""
+        try:
+            if os.path.exists(self.subscribers_file):
+                with open(self.subscribers_file, 'r') as f:
+                    data = json.load(f)
+                    return data.get('subscribers', [])
+        except Exception as e:
+            logger.error(f"Error loading subscribers: {e}")
+        return [self.config.RECIPIENT]
     
     def send(self, message: MIMEMultipart) -> bool:
+        """Send digest to all subscribers"""
+        subscribers = self._load_subscribers()
+        logger.info(f"Sending digest to {len(subscribers)} subscriber(s)...")
+        
+        success_count = 0
+        
         try:
-            logger.info(f"Connecting to {self.config.SMTP_SERVER}...")
-            
-            with smtplib.SMTP_SSL(self.config.SMTP_SERVER, 465, timeout=30) as server:
+            with smtplib.SMTP_SSL(self.config.SMTP_SERVER, self.config.SMTP_PORT, timeout=30) as server:
                 server.login(self.config.SENDER, self.config.PASSWORD)
-                server.send_message(message)
+                
+                for email in subscribers:
+                    try:
+                        msg_copy = MIMEMultipart('alternative')
+                        msg_copy['Subject'] = message['Subject']
+                        msg_copy['From'] = message['From']
+                        msg_copy['To'] = email
+                        
+                        for part in message.get_payload():
+                            msg_copy.attach(MIMEText(part.get_payload(decode=True).decode(), part.get_content_subtype()))
+                        
+                        server.send_message(msg_copy)
+                        success_count += 1
+                        logger.info(f"Sent to: {email}")
+                    except Exception as e:
+                        logger.error(f"Failed to send to {email}: {e}")
             
-            logger.info(f"Digest sent successfully to {self.config.RECIPIENT}")
-            return True
+            logger.info(f"Digest sent to {success_count}/{len(subscribers)} subscribers")
+            return success_count > 0
         
         except smtplib.SMTPAuthenticationError:
             logger.error("Gmail authentication failed. Check your App Password.")
-            return False
-        except smtplib.SMTPException as e:
-            logger.error(f"SMTP error: {str(e)}")
             return False
         except Exception as e:
             logger.error(f"Failed to send digest: {str(e)}")
             return False
 
 
+# ============================================
+# STANDALONE TEST
+# ============================================
 if __name__ == "__main__":
     from scrapers import ArticleAggregator
     from summarizer import ArticleSummarizer
     
     print("Running full PulseDesk pipeline...\n")
     
-    # Step 1: Scrape
     print("STEP 1: Scraping sources...")
     aggregator = ArticleAggregator()
     articles = aggregator.get_articles()
     print(f"Scraped {len(articles)} articles\n")
     
-    # Step 2: Summarize
     print("STEP 2: Summarizing with Mistral AI...")
     summarizer = ArticleSummarizer()
     summaries = summarizer.summarize_batch(articles)
@@ -219,7 +243,6 @@ if __name__ == "__main__":
     sorted_summaries = summarizer.sort_by_relevance(filtered)
     print(f"Generated {len(sorted_summaries)} relevant summaries\n")
     
-    # Step 3: Build and send email
     print("STEP 3: Building and sending digest...")
     builder = DigestEmailBuilder()
     message = builder.build_digest(sorted_summaries[:8], edition="Evening")
@@ -228,6 +251,6 @@ if __name__ == "__main__":
     success = sender.send(message)
     
     if success:
-        print(f"\nDONE! Check {os.getenv('RECIPIENT_EMAIL')} for your digest.")
+        print(f"\nDONE! Check your inbox for the digest.")
     else:
         print("\nFailed to send. Check the error above.")
