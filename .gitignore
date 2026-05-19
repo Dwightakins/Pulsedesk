@@ -2,5 +2,7 @@
 __pycache__/
 *.pyc
 pulsedesk.log
+sent_history.json
+subscribers.json
 .venv/
 venv/
