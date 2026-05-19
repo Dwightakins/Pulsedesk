@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PulseDesk - AI-Powered Daily Intelligence Digest</title>
+    <meta name="description" content="Stop checking 12 websites every morning. PulseDesk delivers curated Nigerian business intelligence to your inbox twice daily.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+
+    <style>
+    /* ============================================
+       THEME VARIABLES
+       ============================================ */
+    :root {
+        --bg-primary: #FAF9F6;
+        --bg-secondary: #F0EDE8;
+        --bg-card: #FFFFFF;
+        --text-primary: #1A1A1A;
+        --text-secondary: #6B6560;
+        --text-muted: #9C9690;
+        --accent: #1A1A1A;
+        --accent-hover: #333333;
+        --border: rgba(0,0,0,0.08);
+        --border-hover: rgba(0,0,0,0.15);
+        --tag-tech-bg: #EDE9FE; --tag-tech-text: #5B21B6;
+        --tag-biz-bg: #D1FAE5; --tag-biz-text: #065F46;
+        --tag-fin-bg: #FEF3C7; --tag-fin-text: #92400E;
+        --tag-ent-bg: #FCE7F3; --tag-ent-text: #9D174D;
+        --success-bg: #D1FAE5; --success-text: #065F46; --success-border: #6EE7B7;
+    }
+
+    [data-theme="dark"] {
+        --bg-primary: #111110;
+        --bg-secondary: #1A1918;
+        --bg-card: #222220;
+        --text-primary: #F5F0EB;
+        --text-secondary: #A8A29E;
+        --text-muted: #6B6560;
+        --accent: #F5F0EB;
+        --accent-hover: #D6D0C8;
+        --border: rgba(255,255,255,0.08);
+        --border-hover: rgba(255,255,255,0.15);
+        --tag-tech-bg: #2E1065; --tag-tech-text: #C4B5FD;
+        --tag-biz-bg: #064E3B; --tag-biz-text: #6EE7B7;
+        --tag-fin-bg: #78350F; --tag-fin-text: #FDE68A;
+        --tag-ent-bg: #831843; --tag-ent-text: #F9A8D4;
+        --success-bg: #064E3B; --success-text: #6EE7B7; --success-border: #065F46;
+    }
+
+
+    /* ============================================
+       BASE RESET
+       ============================================ */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+        font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        transition: background 0.3s, color 0.3s;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .container {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 0 24px;
+    }
+
+
+    /* ============================================
+       COMPONENT: Navbar
+       ============================================ */
+    .nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .nav-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .logo-mark {
+        width: 32px;
+        height: 32px;
+        background: var(--accent);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--bg-primary);
+        font-family: 'Cormorant Garamond', serif;
+        font-weight: 700;
+        font-size: 18px;
+    }
+
+    .logo-text {
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+    }
+
+    .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .nav-link {
+        font-size: 14px;
+        color: var(--text-secondary);
+        transition: color 0.2s;
+    }
+
+    .nav-link:hover { color: var(--text-primary); }
+
+    .github-link {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 14px;
+        color: var(--text-secondary);
+        transition: color 0.2s;
+    }
+
+    .github-link:hover { color: var(--text-primary); }
+    .github-link svg { width: 20px; height: 20px; fill: currentColor; }
+
+    .theme-toggle {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text-secondary);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        transition: all 0.2s;
+    }
+
+    .theme-toggle:hover {
+        border-color: var(--border-hover);
+        color: var(--text-primary);
+    }
+
+
+    /* ============================================
+       COMPONENT: Hero
+       ============================================ */
+    .hero {
+        padding: 100px 0 80px;
+        text-align: center;
+    }
+
+    .hero-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        padding: 6px 16px;
+        border-radius: 100px;
+        font-size: 13px;
+        color: var(--text-secondary);
+        margin-bottom: 28px;
+    }
+
+    .hero-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #22C55E;
+        animation: pulse-dot 2s infinite;
+    }
+
+    @keyframes pulse-dot {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.4; }
+    }
+
+    .hero h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 64px;
+        font-weight: 600;
+        line-height: 1.1;
+        letter-spacing: -2px;
+        margin-bottom: 24px;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .hero p {
+        font-size: 18px;
+        color: var(--text-secondary);
+        max-width: 520px;
+        margin: 0 auto 40px;
+        line-height: 1.7;
+    }
+
+
+    /* ============================================
+       COMPONENT: Signup Form (shared)
+       ============================================ */
+    .signup-box { max-width: 460px; margin: 0 auto; }
+
+    .signup-form {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .signup-form input {
+        flex: 1;
+        padding: 14px 16px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        color: var(--text-primary);
+        font-size: 15px;
+        font-family: 'DM Sans', sans-serif;
+        outline: none;
+        transition: border 0.2s;
+    }
+
+    .signup-form input:focus { border-color: var(--text-muted); }
+    .signup-form input::placeholder { color: var(--text-muted); }
+
+    .btn-primary {
+        padding: 14px 28px;
+        background: var(--accent);
+        color: var(--bg-primary);
+        border: none;
+        border-radius: 10px;
+        font-size: 15px;
+        font-weight: 500;
+        font-family: 'DM Sans', sans-serif;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+    .btn-primary:hover {
+        background: var(--accent-hover);
+        transform: translateY(-1px);
+    }
+
+    .btn-primary:active { transform: translateY(0); }
+
+    .signup-note {
+        font-size: 13px;
+        color: var(--text-muted);
+    }
+
+    .success-msg {
+        display: none;
+        background: var(--success-bg);
+        border: 1px solid var(--success-border);
+        color: var(--success-text);
+        padding: 14px 20px;
+        border-radius: 10px;
+        font-size: 14px;
+        margin-bottom: 12px;
+    }
+
+
+    /* ============================================
+       COMPONENT: Stats Bar
+       ============================================ */
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1px;
+        background: var(--border);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+        max-width: 700px;
+        margin: 0 auto 80px;
+    }
+
+    .stat {
+        background: var(--bg-card);
+        padding: 28px 20px;
+        text-align: center;
+    }
+
+    .stat-num {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 32px;
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
+    .stat-label {
+        font-size: 12px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+
+    /* ============================================
+       COMPONENT: Section Headers
+       ============================================ */
+    .section-label {
+        font-size: 12px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        text-align: center;
+        margin-bottom: 12px;
+    }
+
+    .section-heading {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 38px;
+        font-weight: 600;
+        text-align: center;
+        letter-spacing: -1px;
+        margin-bottom: 48px;
+    }
+
+
+    /* ============================================
+       COMPONENT: Steps (How it works)
+       ============================================ */
+    .steps {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 100px;
+    }
+
+    .step {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 28px 24px;
+        transition: border-color 0.2s;
+    }
+
+    .step:hover { border-color: var(--border-hover); }
+
+    .step-num {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: var(--bg-secondary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 16px;
+        color: var(--text-secondary);
+    }
+
+    .step h3 {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .step p {
+        font-size: 14px;
+        color: var(--text-secondary);
+        line-height: 1.6;
+    }
+
+
+    /* ============================================
+       COMPONENT: Sources Grid
+       ============================================ */
+    .sources-section { margin-bottom: 100px; }
+
+    .source-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .source-category {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 24px;
+    }
+
+    .source-cat-label {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 14px;
+    }
+
+    .cat-tech .source-cat-label { background: var(--tag-tech-bg); color: var(--tag-tech-text); }
+    .cat-biz .source-cat-label { background: var(--tag-biz-bg); color: var(--tag-biz-text); }
+    .cat-fin .source-cat-label { background: var(--tag-fin-bg); color: var(--tag-fin-text); }
+    .cat-ent .source-cat-label { background: var(--tag-ent-bg); color: var(--tag-ent-text); }
+
+    .source-list { list-style: none; }
+
+    .source-list li {
+        font-size: 14px;
+        color: var(--text-secondary);
+        padding: 6px 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .source-list li:last-child { border-bottom: none; }
+
+
+    /* ============================================
+       COMPONENT: CTA Section
+       ============================================ */
+    .cta-section {
+        text-align: center;
+        padding: 60px 0;
+        margin-bottom: 40px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: var(--bg-card);
+    }
+
+    .cta-section h2 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 36px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        letter-spacing: -1px;
+    }
+
+    .cta-section p {
+        color: var(--text-secondary);
+        font-size: 16px;
+        margin-bottom: 28px;
+    }
+
+    .cta-form {
+        display: flex;
+        gap: 8px;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+
+    .cta-form input {
+        flex: 1;
+        padding: 12px 16px;
+        background: var(--bg-primary);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        color: var(--text-primary);
+        font-size: 14px;
+        font-family: 'DM Sans', sans-serif;
+        outline: none;
+    }
+
+    .cta-form input::placeholder { color: var(--text-muted); }
+
+    .cta-success {
+        display: none;
+        color: var(--success-text);
+        font-size: 14px;
+        margin-top: 12px;
+    }
+
+
+    /* ============================================
+       COMPONENT: Footer
+       ============================================ */
+    footer {
+        border-top: 1px solid var(--border);
+        padding: 32px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .footer-left {
+        font-size: 13px;
+        color: var(--text-muted);
+    }
+
+    .footer-right {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+    }
+
+    .footer-right a {
+        font-size: 13px;
+        color: var(--text-muted);
+        transition: color 0.2s;
+    }
+
+    .footer-right a:hover { color: var(--text-primary); }
+
+    .footer-divider {
+        width: 1px;
+        height: 14px;
+        background: var(--border);
+    }
+
+
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    @media (max-width: 768px) {
+        .hero h1 { font-size: 40px; letter-spacing: -1px; }
+        .hero { padding: 60px 0 50px; }
+        .signup-form { flex-direction: column; }
+        .stats { grid-template-columns: repeat(2, 1fr); }
+        .steps { grid-template-columns: 1fr 1fr; gap: 12px; }
+        .source-grid { grid-template-columns: 1fr; }
+        .cta-form { flex-direction: column; }
+        .nav-link { display: none; }
+        footer { flex-direction: column; gap: 16px; text-align: center; }
+        .section-heading { font-size: 30px; }
+    }
+
+    @media (max-width: 480px) {
+        .hero h1 { font-size: 32px; }
+        .steps { grid-template-columns: 1fr; }
+        .stats { grid-template-columns: 1fr 1fr; }
+    }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- ========================================
+         COMPONENT: Navbar
+         ======================================== -->
+    <nav class="nav">
+        <div class="nav-left">
+            <div class="logo-mark">P</div>
+            <span class="logo-text">PulseDesk</span>
+        </div>
+        <div class="nav-right">
+            <a href="#how" class="nav-link">How it works</a>
+            <a href="#sources" class="nav-link">Sources</a>
+            <a href="https://github.com/Dwightakins/Pulsedesk" target="_blank" class="github-link">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                GitHub
+            </a>
+            <button class="theme-toggle" onclick="ThemeManager.toggle()" aria-label="Toggle dark mode" id="themeBtn">
+                <span id="themeIcon">&#9790;</span>
+            </button>
+        </div>
+    </nav>
+
+
+    <!-- ========================================
+         COMPONENT: Hero
+         ======================================== -->
+    <section class="hero">
+        <div class="hero-label">
+            <span class="hero-dot"></span>
+            Delivering intelligence twice daily
+        </div>
+        <h1>Your morning briefing, curated by AI</h1>
+        <p>PulseDesk scrapes 11 Nigerian news sources, filters the noise with AI, and delivers only what matters. Twice a day, zero effort.</p>
+
+        <div class="signup-box">
+            <form class="signup-form" id="heroForm" onsubmit="FormHandler.heroSignup(event)">
+                <input type="email" id="heroEmail" placeholder="Enter your email" required>
+                <button type="submit" class="btn-primary">Get the digest</button>
+            </form>
+            <div class="success-msg" id="heroSuccess">Welcome aboard. Your first digest arrives tomorrow at 7am.</div>
+            <p class="signup-note">Free forever. No spam. Unsubscribe anytime.</p>
+        </div>
+    </section>
+
+
+    <!-- ========================================
+         COMPONENT: Stats Bar
+         ======================================== -->
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-num">11</div>
+            <div class="stat-label">Sources</div>
+        </div>
+        <div class="stat">
+            <div class="stat-num">2x</div>
+            <div class="stat-label">Daily</div>
+        </div>
+        <div class="stat">
+            <div class="stat-num">&lt;40s</div>
+            <div class="stat-label">Pipeline</div>
+        </div>
+        <div class="stat">
+            <div class="stat-num">AI</div>
+            <div class="stat-label">Filtered</div>
+        </div>
+    </div>
+
+
+    <!-- ========================================
+         COMPONENT: How It Works
+         ======================================== -->
+    <section id="how">
+        <p class="section-label">How it works</p>
+        <h2 class="section-heading">Four steps. Fully automated.</h2>
+        <div class="steps">
+            <div class="step">
+                <div class="step-num">01</div>
+                <h3>Scrape</h3>
+                <p>Concurrent scraping from 11 sources across tech, business, finance, and entertainment.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">02</div>
+                <h3>Summarize</h3>
+                <p>Mistral AI reads every article and extracts only the actionable insights that matter.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">03</div>
+                <h3>Filter</h3>
+                <p>Each story scored by relevance. Only the highest scoring stories make the final cut.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">04</div>
+                <h3>Deliver</h3>
+                <p>Clean branded email lands in your inbox at 7am and 6pm. Zero effort from you.</p>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ========================================
+         COMPONENT: Sources Grid
+         ======================================== -->
+    <section id="sources" class="sources-section">
+        <p class="section-label">Sources we monitor</p>
+        <h2 class="section-heading">11 sources. Four categories.</h2>
+        <div class="source-grid">
+            <div class="source-category cat-tech">
+                <span class="source-cat-label">Tech</span>
+                <ul class="source-list">
+                    <li>TechCabal</li>
+                    <li>TechPoint Africa</li>
+                    <li>TechNext</li>
+                </ul>
+            </div>
+            <div class="source-category cat-biz">
+                <span class="source-cat-label">Business</span>
+                <ul class="source-list">
+                    <li>BusinessDay Nigeria</li>
+                    <li>Guardian Nigeria</li>
+                    <li>Punch Newspapers</li>
+                </ul>
+            </div>
+            <div class="source-category cat-fin">
+                <span class="source-cat-label">Finance</span>
+                <ul class="source-list">
+                    <li>Nairametrics</li>
+                    <li>TheCable Business</li>
+                    <li>Premium Times</li>
+                </ul>
+            </div>
+            <div class="source-category cat-ent">
+                <span class="source-cat-label">Entertainment</span>
+                <ul class="source-list">
+                    <li>BellaNaija</li>
+                    <li>Pulse Nigeria</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ========================================
+         COMPONENT: CTA Section
+         ======================================== -->
+    <section class="cta-section">
+        <h2>Start reading what matters</h2>
+        <p>Join founders and executives who start their day informed.</p>
+        <form class="cta-form" id="ctaForm" onsubmit="FormHandler.ctaSignup(event)">
+            <input type="email" id="ctaEmail" placeholder="Your email address" required>
+            <button type="submit" class="btn-primary">Subscribe</button>
+        </form>
+        <p class="cta-success" id="ctaSuccess">You're in. First digest arrives tomorrow morning.</p>
+    </section>
+
+
+    <!-- ========================================
+         COMPONENT: Footer
+         ======================================== -->
+    <footer>
+        <div class="footer-left">Built with purpose in Lagos, Nigeria</div>
+        <div class="footer-right">
+            <a href="https://github.com/Dwightakins/Pulsedesk" target="_blank">GitHub</a>
+            <div class="footer-divider"></div>
+            <a href="mailto:dwightakins07@gmail.com">dwightakins07@gmail.com</a>
+        </div>
+    </footer>
+
+</div>
+
+
+<!-- ============================================
+     SCRIPTS
+     ============================================ -->
+
+<!-- Module: Theme Manager -->
+<script>
+const ThemeManager = {
+    init() {
+        const saved = localStorage.getItem('pulsedesk-theme');
+        if (saved) {
+            document.documentElement.setAttribute('data-theme', saved);
+            this.updateIcon(saved);
+        }
+    },
+
+    toggle() {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = current === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', next);
+        this.updateIcon(next);
+        localStorage.setItem('pulsedesk-theme', next);
+    },
+
+    updateIcon(theme) {
+        const icon = document.getElementById('themeIcon');
+        icon.innerHTML = theme === 'dark' ? '&#9788;' : '&#9790;';
+    }
+};
+
+ThemeManager.init();
+</script>
+
+
+<!-- Module: Form Handler (connected to Formspree) -->
+<script>
+const FormHandler = {
+    formspreeUrl: 'https://formspree.io/f/mykvzagl',
+
+    async heroSignup(e) {
+        e.preventDefault();
+        const email = document.getElementById('heroEmail').value.trim();
+        if (this.validateEmail(email)) {
+            const success = await this.submitToFormspree(email);
+            if (success) {
+                document.getElementById('heroForm').style.display = 'none';
+                document.getElementById('heroSuccess').style.display = 'block';
+                SubscriberStore.add(email);
+            }
+        }
+    },
+
+    async ctaSignup(e) {
+        e.preventDefault();
+        const email = document.getElementById('ctaEmail').value.trim();
+        if (this.validateEmail(email)) {
+            const success = await this.submitToFormspree(email);
+            if (success) {
+                document.getElementById('ctaForm').style.display = 'none';
+                document.getElementById('ctaSuccess').style.display = 'block';
+                SubscriberStore.add(email);
+            }
+        }
+    },
+
+    async submitToFormspree(email) {
+        try {
+            const response = await fetch(this.formspreeUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email, _subject: 'New PulseDesk Subscriber' })
+            });
+            return response.ok;
+        } catch (error) {
+            console.error('[PulseDesk] Signup failed:', error);
+            return false;
+        }
+    },
+
+    validateEmail(email) {
+        return email && email.includes('@') && email.includes('.');
+    }
+};
+</script>
+
+
+<!-- Module: Subscriber Store -->
+<script>
+const SubscriberStore = {
+    key: 'pulsedesk-subscribers',
+
+    add(email) {
+        const subs = this.getAll();
+        if (!subs.includes(email)) {
+            subs.push(email);
+            localStorage.setItem(this.key, JSON.stringify(subs));
+            console.log('[PulseDesk] New subscriber:', email);
+        }
+        console.log('[PulseDesk] Total subscribers:', subs.length);
+    },
+
+    getAll() {
+        return JSON.parse(localStorage.getItem(this.key) || '[]');
+    },
+
+    remove(email) {
+        const subs = this.getAll().filter(s => s !== email);
+        localStorage.setItem(this.key, JSON.stringify(subs));
+    },
+
+    count() {
+        return this.getAll().length;
+    }
+};
+</script>
+
+</body>
+</html>
