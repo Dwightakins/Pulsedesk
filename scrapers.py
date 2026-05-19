@@ -1,3 +1,5 @@
+import json
+from pathlib import Path
 import requests
 from bs4 import BeautifulSoup
 from typing import Optional, List, Dict
@@ -209,6 +211,25 @@ class ArticleAggregator:
             key: BaseScraper(key, config)
             for key, config in self.config.SOURCES.items()
         }
+        self.history_file = Path(__file__).parent / 'sent_history.json'
+    
+    def _load_history(self) -> set:
+        """Load previously sent article URLs"""
+        try:
+            if self.history_file.exists():
+                data = json.loads(self.history_file.read_text(encoding='utf-8'))
+                return set(data.get('urls', []))
+        except Exception:
+            pass
+        return set()
+    
+    def _save_history(self, urls: set):
+        """Save sent article URLs, keep only last 500"""
+        url_list = list(urls)[-500:]
+        self.history_file.write_text(
+            json.dumps({'urls': url_list, 'last_updated': datetime.now().isoformat()}),
+            encoding='utf-8'
+        )
     
     def scrape_all(self, max_workers: int = 4) -> List[Article]:
         all_articles = []
@@ -231,7 +252,18 @@ class ArticleAggregator:
         return all_articles
     
     def get_articles(self) -> List[Article]:
-        return self.scrape_all()
+        """Get only NEW articles not previously sent"""
+        all_articles = self.scrape_all()
+        history = self._load_history()
+        
+        new_articles = [a for a in all_articles if a.url not in history]
+        logger.info(f"New articles: {len(new_articles)} (filtered out {len(all_articles) - len(new_articles)} already sent)")
+        
+        # Update history with all current URLs
+        updated_history = history.union({a.url for a in all_articles})
+        self._save_history(updated_history)
+        
+        return new_articles
 
 
 if __name__ == "__main__":

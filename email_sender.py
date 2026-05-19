@@ -181,8 +181,7 @@ class DigestSender:
         try:
             logger.info(f"Connecting to {self.config.SMTP_SERVER}...")
             
-            with smtplib.SMTP(self.config.SMTP_SERVER, self.config.SMTP_PORT) as server:
-                server.starttls()
+            with smtplib.SMTP_SSL(self.config.SMTP_SERVER, 465, timeout=30) as server:
                 server.login(self.config.SENDER, self.config.PASSWORD)
                 server.send_message(message)
             

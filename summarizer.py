@@ -84,7 +84,7 @@ Return ONLY the JSON array. No markdown, no explanation, no code blocks."""
             MISTRAL_API_URL,
             headers=self.headers,
             json=payload,
-            timeout=30
+            timeout=90
         )
         
         if response.status_code != 200:
