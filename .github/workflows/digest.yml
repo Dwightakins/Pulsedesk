@@ -2,15 +2,12 @@ name: PulseDesk Daily Digest
 
 on:
   schedule:
-    # Morning digest - 6:00 UTC (7:00 AM Lagos time)
     - cron: '0 6 * * *'
-    # Evening digest - 17:00 UTC (6:00 PM Lagos time)
     - cron: '0 17 * * *'
   workflow_dispatch:
 
 jobs:
-  morning-digest:
-    if: github.event.schedule == '0 6 * * *' || github.event_name == 'workflow_dispatch'
+  send-digest:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,34 +20,17 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run Morning Digest
+      - name: Determine edition and send
         env:
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_PASSWORD: ${{ secrets.GMAIL_PASSWORD }}
           RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
           MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
           SUBSCRIBERS: ${{ secrets.SUBSCRIBERS }}
-        run: python main.py --now Morning
-
-  evening-digest:
-    if: github.event.schedule == '0 17 * * *'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-
-      - name: Run Evening Digest
-        env:
-          GMAIL_USER: ${{ secrets.GMAIL_USER }}
-          GMAIL_PASSWORD: ${{ secrets.GMAIL_PASSWORD }}
-          RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
-          MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
-          SUBSCRIBERS: ${{ secrets.SUBSCRIBERS }}
-        run: python main.py --now Evening
+        run: |
+          HOUR=$(date -u +%H)
+          if [ "$HOUR" = "06" ]; then
+            python main.py --now Morning
+          else
+            python main.py --now Evening
+          fi
