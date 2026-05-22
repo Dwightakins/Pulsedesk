@@ -14,7 +14,7 @@ Founders and executives waste 30-45 minutes every morning scanning multiple news
 
 ## The Solution
 
-PulseDesk runs automatically at 7am and 6pm, pulls the latest from 11 curated Nigerian sources, uses Mistral AI to extract only what matters, scores each story by relevance, and delivers a clean branded email digest. Zero effort from the reader.
+PulseDesk runs automatically at 7am and 6pm, pulls the latest from curated Nigerian sources, uses Mistral AI to extract only what matters, scores each story by relevance, and delivers a clean branded email digest. Zero effort from the reader.
 
 ---
 
