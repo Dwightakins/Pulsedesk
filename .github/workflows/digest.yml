@@ -2,8 +2,8 @@ name: PulseDesk Daily Digest
 
 on:
   schedule:
-    - cron: '0 6 * * *'
-    - cron: '0 17 * * *'
+    - cron: '0 4 * * *'
+    - cron: '0 15 * * *'
   workflow_dispatch:
     inputs:
       edition:
