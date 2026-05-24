@@ -32,10 +32,9 @@ jobs:
       - name: Set edition
         id: edition
         run: |
-          if [ "${{ github.event.schedule }}" = "0 17 * * *" ]; then
+          HOUR=$(date -u +%-H)
+          if [ "$HOUR" -ge 12 ]; then
             echo "edition=Evening" >> $GITHUB_OUTPUT
-          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "edition=${{ github.event.inputs.edition }}" >> $GITHUB_OUTPUT
           else
             echo "edition=Morning" >> $GITHUB_OUTPUT
           fi
