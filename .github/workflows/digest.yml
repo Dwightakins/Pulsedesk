@@ -2,8 +2,8 @@ name: PulseDesk Daily Digest
 
 on:
   schedule:
-    - cron: '0 4 * * *'
-    - cron: '0 15 * * *'
+    - cron: '0 2 * * *'
+    - cron: '0 14 * * *'
   workflow_dispatch:
     inputs:
       edition:
@@ -20,6 +20,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Restore sent history
+        uses: actions/cache@v4
+        with:
+          path: sent_history.json
+          key: pulsedesk-history-${{ github.run_id }}
+          restore-keys: |
+            pulsedesk-history-
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -47,3 +55,9 @@ jobs:
           MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
           SUBSCRIBERS: ${{ secrets.SUBSCRIBERS }}
         run: python main.py --now ${{ steps.edition.outputs.edition }}
+
+      - name: Save sent history
+        uses: actions/cache@v4
+        with:
+          path: sent_history.json
+          key: pulsedesk-history-${{ github.run_id }}
