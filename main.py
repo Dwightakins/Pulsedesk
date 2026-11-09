@@ -69,6 +69,7 @@ class PulseDesk:
             elapsed = (datetime.now() - start_time).seconds
             
             if success:
+                self.aggregator.mark_sent(articles)
                 logger.info(f"{edition} digest delivered in {elapsed}s | {len(articles)} scraped | {len(sorted_summaries)} summarized")
                 return True
             else:
@@ -130,8 +131,9 @@ def main():
         if sys.argv[1] == "--now":
             edition = sys.argv[2] if len(sys.argv) > 2 else "Morning"
             print(f"Running {edition} digest immediately...\n")
-            pulse.run_digest(edition=edition)
-        
+            if not pulse.run_digest(edition=edition):
+                sys.exit(1)
+
         elif sys.argv[1] == "--schedule":
             morning = sys.argv[2] if len(sys.argv) > 2 else "07:00"
             evening = sys.argv[3] if len(sys.argv) > 3 else "18:00"

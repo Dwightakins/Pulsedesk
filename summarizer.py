@@ -4,6 +4,7 @@ from dataclasses import dataclass
 import logging
 import json
 import os
+import time
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -70,7 +71,7 @@ Return ONLY the JSON array. No markdown, no explanation, no code blocks."""
         return formatted
     
     def _call_mistral(self, system_prompt: str, user_message: str) -> str:
-        """Direct API call to Mistral, no SDK needed"""
+        """Direct API call to Mistral, retries on 429"""
         payload = {
             "model": self.model,
             "messages": [
@@ -79,17 +80,28 @@ Return ONLY the JSON array. No markdown, no explanation, no code blocks."""
             ],
             "temperature": 0.3
         }
-        
-        response = http.post(
-            MISTRAL_API_URL,
-            headers=self.headers,
-            json=payload,
-            timeout=90
-        )
-        
+
+        for attempt in range(4):
+            response = http.post(
+                MISTRAL_API_URL,
+                headers=self.headers,
+                json=payload,
+                timeout=90
+            )
+            if response.status_code == 429 and attempt < 3:
+                try:
+                    wait = int(response.headers.get("Retry-After", 5 * (attempt + 1)))
+                except ValueError:
+                    wait = 5 * (attempt + 1)
+                wait = min(wait, 30)
+                logger.warning(f"Mistral 429, retrying in {wait}s (attempt {attempt + 1}/3)")
+                time.sleep(wait)
+                continue
+            break
+
         if response.status_code != 200:
             raise Exception(f"Mistral API error {response.status_code}: {response.text}")
-        
+
         data = response.json()
         return data["choices"][0]["message"]["content"]
     

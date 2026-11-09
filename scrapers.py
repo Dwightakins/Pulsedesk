@@ -259,11 +259,12 @@ class ArticleAggregator:
         new_articles = [a for a in all_articles if a.url not in history]
         logger.info(f"New articles: {len(new_articles)} (filtered out {len(all_articles) - len(new_articles)} already sent)")
         
-        # Update history with all current URLs
-        updated_history = history.union({a.url for a in all_articles})
-        self._save_history(updated_history)
-        
         return new_articles
+
+    def mark_sent(self, articles: List[Article]):
+        """Record article URLs as sent - call only after the digest is delivered"""
+        history = self._load_history()
+        self._save_history(history.union({a.url for a in articles}))
 
 
 if __name__ == "__main__":
