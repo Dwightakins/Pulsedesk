@@ -34,7 +34,7 @@ class ArticleSummarizer:
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json"
         }
-        self.model = "mistral-large-latest"
+        self.model = "mistral-small-latest"
     
     def _build_system_prompt(self) -> str:
         return """You are a business intelligence summarizer for Nigerian and African tech/art markets.
@@ -201,4 +201,3 @@ if __name__ == "__main__":
             traceback.print_exc()
     else:
         print("No articles found to summarize")
-        
