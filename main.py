@@ -51,7 +51,7 @@ class PulseDesk:
                 return False
             
             # Step 2: Summarize
-            logger.info("STEP 2: Summarizing with Groq...")
+            logger.info("STEP 2: Summarizing with AI...")
             summaries = self.summarizer.summarize_batch(articles[:30])
             filtered = self.summarizer.filter_by_relevance(summaries, threshold=0.6)
             sorted_summaries = self.summarizer.sort_by_relevance(filtered)
