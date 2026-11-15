@@ -15,6 +15,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# The AI provider lives in these lines. To switch provider, change the URL,
+# the default model, and the key name below.
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
 DEFAULT_MODEL = "openai/gpt-oss-120b"
 BATCH_SIZE = 10          # articles per request, keeps each call small
@@ -74,7 +76,7 @@ Return ONLY the JSON array. No markdown, no explanation, no code blocks."""
         return formatted
     
     def _call_llm(self, system_prompt: str, user_message: str) -> str:
-        """Direct API call to Groq (OpenAI-compatible), retries on 429"""
+        """Direct API call to the AI provider (OpenAI-compatible), retries on 429"""
         payload = {
             "model": self.model,
             "messages": [
@@ -97,13 +99,13 @@ Return ONLY the JSON array. No markdown, no explanation, no code blocks."""
                 except ValueError:
                     wait = 15 * (attempt + 1)
                 wait = max(1, min(wait, 60))
-                logger.warning(f"Groq 429, retrying in {wait}s (attempt {attempt + 1}/3)")
+                logger.warning(f"AI provider 429, retrying in {wait}s (attempt {attempt + 1}/3)")
                 time.sleep(wait)
                 continue
             break
 
         if response.status_code != 200:
-            raise Exception(f"Groq API error {response.status_code}: {response.text}")
+            raise Exception(f"AI API error {response.status_code}: {response.text}")
 
         data = response.json()
         return data["choices"][0]["message"]["content"]
@@ -140,14 +142,14 @@ Return ONLY the JSON array. No markdown, no explanation, no code blocks."""
         return summaries
 
     def summarize_batch(self, articles: List) -> List[Summary]:
-        """Summarize articles with Groq, in small groups so one bad reply cannot sink the run"""
+        """Summarize articles with AI, in small groups so one bad reply cannot sink the run"""
         if not articles:
             logger.warning("No articles to summarize")
             return []
 
         system_prompt = self._build_system_prompt()
         chunks = [articles[i:i + BATCH_SIZE] for i in range(0, len(articles), BATCH_SIZE)]
-        logger.info(f"Summarizing {len(articles)} articles with Groq ({self.model}) in {len(chunks)} batch(es)...")
+        logger.info(f"Summarizing {len(articles)} articles with AI ({self.model}) in {len(chunks)} batch(es)...")
 
         summaries = []
         for n, chunk in enumerate(chunks, 1):
