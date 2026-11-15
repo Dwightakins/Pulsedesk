@@ -15,7 +15,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-MISTRAL_API_URL = "https://api.mistral.ai/v1/chat/completions"
+GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
+DEFAULT_MODEL = "openai/gpt-oss-120b"
+BATCH_SIZE = 10          # articles per request, keeps each call small
+PAUSE_BETWEEN_BATCHES = 20  # seconds, stays under the free tokens-per-minute limit
 
 @dataclass
 class Summary:
@@ -27,15 +30,15 @@ class Summary:
 
 class ArticleSummarizer:
     def __init__(self, api_key: Optional[str] = None):
-        self.api_key = api_key or os.getenv('MISTRAL_API_KEY')
+        self.api_key = api_key or os.getenv('GROQ_API_KEY')
         if not self.api_key:
-            raise ValueError("MISTRAL_API_KEY not found in environment or parameters")
+            raise ValueError("GROQ_API_KEY not found in environment or parameters")
         
         self.headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json"
         }
-        self.model = "mistral-small-latest"
+        self.model = os.getenv('GROQ_MODEL') or DEFAULT_MODEL
     
     def _build_system_prompt(self) -> str:
         return """You are a business intelligence summarizer for Nigerian and African tech/art markets.
@@ -70,8 +73,8 @@ Return ONLY the JSON array. No markdown, no explanation, no code blocks."""
             formatted += f"   URL: {article.url}\n\n"
         return formatted
     
-    def _call_mistral(self, system_prompt: str, user_message: str) -> str:
-        """Direct API call to Mistral, retries on 429"""
+    def _call_llm(self, system_prompt: str, user_message: str) -> str:
+        """Direct API call to Groq (OpenAI-compatible), retries on 429"""
         payload = {
             "model": self.model,
             "messages": [
@@ -83,94 +86,87 @@ Return ONLY the JSON array. No markdown, no explanation, no code blocks."""
 
         for attempt in range(4):
             response = http.post(
-                MISTRAL_API_URL,
+                GROQ_API_URL,
                 headers=self.headers,
                 json=payload,
                 timeout=90
             )
             if response.status_code == 429 and attempt < 3:
                 try:
-                    wait = int(response.headers.get("Retry-After", 5 * (attempt + 1)))
+                    wait = int(float(response.headers.get("Retry-After", 15 * (attempt + 1))))
                 except ValueError:
-                    wait = 5 * (attempt + 1)
-                wait = min(wait, 30)
-                logger.warning(f"Mistral 429, retrying in {wait}s (attempt {attempt + 1}/3)")
+                    wait = 15 * (attempt + 1)
+                wait = max(1, min(wait, 60))
+                logger.warning(f"Groq 429, retrying in {wait}s (attempt {attempt + 1}/3)")
                 time.sleep(wait)
                 continue
             break
 
         if response.status_code != 200:
-            raise Exception(f"Mistral API error {response.status_code}: {response.text}")
+            raise Exception(f"Groq API error {response.status_code}: {response.text}")
 
         data = response.json()
         return data["choices"][0]["message"]["content"]
-    
+
+    def _parse_summaries(self, response_text: str) -> List[Summary]:
+        """Pull the JSON array out of the model reply and build Summary objects"""
+        clean = (response_text or "").strip()
+        start, end = clean.find("["), clean.rfind("]")
+        if start == -1 or end <= start:
+            logger.warning("Model reply had no JSON array")
+            return []
+
+        try:
+            items = json.loads(clean[start:end + 1])
+        except json.JSONDecodeError as e:
+            logger.warning(f"Could not parse model reply as JSON: {e}")
+            return []
+
+        summaries = []
+        for data in items if isinstance(items, list) else []:
+            if not isinstance(data, dict):
+                continue
+            try:
+                score = float(data.get('relevance_score', 0))
+            except (TypeError, ValueError):
+                score = 0.0
+            summaries.append(Summary(
+                title=str(data.get('title', '')),
+                brief=str(data.get('brief', '')),
+                source=str(data.get('source', '')),
+                relevance_score=score,
+                url=str(data.get('url', ''))
+            ))
+        return summaries
+
     def summarize_batch(self, articles: List) -> List[Summary]:
-        """Summarize batch of articles using Mistral API"""
+        """Summarize articles with Groq, in small groups so one bad reply cannot sink the run"""
         if not articles:
             logger.warning("No articles to summarize")
             return []
-        
+
+        system_prompt = self._build_system_prompt()
+        chunks = [articles[i:i + BATCH_SIZE] for i in range(0, len(articles), BATCH_SIZE)]
+        logger.info(f"Summarizing {len(articles)} articles with Groq ({self.model}) in {len(chunks)} batch(es)...")
+
         summaries = []
-        
-        try:
-            system_prompt = self._build_system_prompt()
-            formatted_articles = self._format_articles(articles)
-            
-            logger.info(f"Summarizing {len(articles)} articles with Mistral...")
-            
-            response_text = self._call_mistral(
-                system_prompt,
-                formatted_articles + "\n\nReturn the JSON array now."
-            )
-            
-            # Clean response - remove markdown code blocks if present
-            clean = response_text.strip()
-            if clean.startswith("```"):
-                clean = clean.split("\n", 1)[1]
-            if clean.endswith("```"):
-                clean = clean.rsplit("```", 1)[0]
-            clean = clean.strip()
-            
-            # Parse JSON array
+        for n, chunk in enumerate(chunks, 1):
+            if n > 1:
+                time.sleep(PAUSE_BETWEEN_BATCHES)
             try:
-                articles_data = json.loads(clean)
-                if isinstance(articles_data, list):
-                    for data in articles_data:
-                        summary = Summary(
-                            title=data.get('title', ''),
-                            brief=data.get('brief', ''),
-                            source=data.get('source', ''),
-                            relevance_score=float(data.get('relevance_score', 0)),
-                            url=data.get('url', '')
-                        )
-                        summaries.append(summary)
-            except json.JSONDecodeError:
-                # Fallback: try line by line
-                for line in clean.split('\n'):
-                    line = line.strip().rstrip(',')
-                    if not line or line in ['[', ']']:
-                        continue
-                    try:
-                        data = json.loads(line)
-                        summary = Summary(
-                            title=data.get('title', ''),
-                            brief=data.get('brief', ''),
-                            source=data.get('source', ''),
-                            relevance_score=float(data.get('relevance_score', 0)),
-                            url=data.get('url', '')
-                        )
-                        summaries.append(summary)
-                    except json.JSONDecodeError:
-                        continue
-            
-            logger.info(f"Generated {len(summaries)} summaries from {len(articles)} articles")
-            return summaries
-        
-        except Exception as e:
-            logger.error(f"Error summarizing with Mistral: {str(e)}")
-            return []
-    
+                response_text = self._call_llm(
+                    system_prompt,
+                    self._format_articles(chunk) + "\n\nReturn the JSON array now."
+                )
+                batch = self._parse_summaries(response_text)
+                logger.info(f"Batch {n}/{len(chunks)}: {len(batch)} summaries from {len(chunk)} articles")
+                summaries.extend(batch)
+            except Exception as e:
+                logger.error(f"Batch {n}/{len(chunks)} failed: {str(e)}")
+
+        logger.info(f"Generated {len(summaries)} summaries from {len(articles)} articles")
+        return summaries
+
     def filter_by_relevance(self, summaries: List[Summary], threshold: float = 0.6) -> List[Summary]:
         filtered = [s for s in summaries if s.relevance_score >= threshold]
         logger.info(f"Filtered to {len(filtered)} high-relevance articles (threshold: {threshold})")

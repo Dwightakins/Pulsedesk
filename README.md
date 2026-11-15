@@ -14,7 +14,7 @@ Founders and executives waste 30-45 minutes every morning scanning multiple news
 
 ## The Solution
 
-PulseDesk runs automatically at 7am and 6pm, pulls the latest from curated Nigerian sources, uses Mistral AI to extract only what matters, scores each story by relevance, and delivers a clean branded email digest. Zero effort from the reader.
+PulseDesk runs automatically at 7am and 6pm, pulls the latest from curated Nigerian sources, uses an AI model on Groq to extract only what matters, scores each story by relevance, and delivers a clean branded email digest. Zero effort from the reader.
 
 ---
 
@@ -22,7 +22,7 @@ PulseDesk runs automatically at 7am and 6pm, pulls the latest from curated Niger
 
     Scrape (11 sources, concurrent)
          |
-    Summarize (Mistral AI, relevance scoring 0-1)
+    Summarize (Groq, relevance scoring 0-1)
          |
     Filter (only 60%+ relevance makes the cut)
          |
@@ -59,7 +59,7 @@ Sources are configurable. Add or remove any site by editing the scraper config.
 | File | What It Does |
 |------|-------------|
 | `scrapers.py` | Concurrent web scraping with retry logic, timeout handling, fallback extraction, and URL normalization |
-| `summarizer.py` | Mistral AI integration for article summarization and relevance scoring |
+| `summarizer.py` | Groq API integration for article summarization and relevance scoring |
 | `email_sender.py` | HTML email builder with branded Morning/Evening templates and SMTP delivery |
 | `main.py` | Pipeline orchestrator with CLI interface and twice-daily scheduler |
 
@@ -80,11 +80,11 @@ Create a `.env` file in the project root:
     GMAIL_USER=your_gmail@gmail.com
     GMAIL_PASSWORD=your_gmail_app_password
     RECIPIENT_EMAIL=recipient@gmail.com
-    MISTRAL_API_KEY=your_mistral_api_key
+    GROQ_API_KEY=your_groq_api_key
 
 Gmail App Password: myaccount.google.com > Security > App passwords
 
-Mistral API Key: console.mistral.ai
+Groq API Key: console.groq.com
 
 **3. Send your first digest**
 
@@ -110,7 +110,7 @@ Mistral API Key: console.mistral.ai
 
 - **Python 3.14.5** with concurrent futures for parallel scraping
 - **BeautifulSoup4** for HTML parsing and article extraction
-- **Mistral AI API** for intelligent summarization and relevance scoring
+- **Groq API** for intelligent summarization and relevance scoring
 - **SMTP** for email delivery via Gmail
 - **Schedule** for automated twice-daily execution
 
