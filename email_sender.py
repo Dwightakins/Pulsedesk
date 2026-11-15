@@ -20,6 +20,12 @@ logger = logging.getLogger(__name__)
 # ============================================
 # CONFIG
 # ============================================
+def _mask(email: str) -> str:
+    """Hide most of an address so subscriber emails never show in public run logs"""
+    name, _, domain = str(email).partition('@')
+    return f"{name[:2]}***@{domain}" if domain else "***"
+
+
 class EmailConfig:
     SMTP_SERVER = "smtp.gmail.com"
     SMTP_PORT = 465
@@ -215,9 +221,9 @@ class DigestSender:
                         
                         server.send_message(msg_copy)
                         success_count += 1
-                        logger.info(f"Sent to: {email}")
+                        logger.info(f"Sent to: {_mask(email)}")
                     except Exception as e:
-                        logger.error(f"Failed to send to {email}: {e}")
+                        logger.error(f"Failed to send to {_mask(email)}: {e}")
             
             logger.info(f"Digest sent to {success_count}/{len(subscribers)} subscribers")
             return success_count > 0
