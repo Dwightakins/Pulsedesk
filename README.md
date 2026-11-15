@@ -1,8 +1,8 @@
 # PulseDesk
 
-**Stop checking 12 websites every morning. PulseDesk delivers your personalized business intelligence digest before your first cup of coffee, and again before you leave the office.**
+**Stop scrolling through news sites every morning. PulseDesk delivers your personalized business intelligence digest before your first cup of coffee, and again before you leave the office.**
 
-An AI-powered news agent that scrapes, summarizes, and delivers curated intelligence from Nigerian tech, business, finance, and entertainment sources directly to your inbox twice a day.
+An AI-powered news agent. The AI goes through the web, scrapes the latest Nigerian tech, business, finance, and entertainment news, summarizes it, and sends it to your inbox twice a day.
 
 Built by [Dwight Akinyanju](https://github.com/Dwightakins)
 
@@ -14,13 +14,13 @@ Founders and executives waste 30-45 minutes every morning scanning multiple news
 
 ## The Solution
 
-PulseDesk runs automatically at 7am and 6pm, pulls the latest from curated Nigerian sources, uses AI to extract only what matters, scores each story by relevance, and delivers a clean branded email digest. Zero effort from the reader.
+PulseDesk runs automatically at 7am and 6pm, goes through the web for the latest Nigerian news, uses AI to extract only what matters, scores each story by relevance, and delivers a clean branded email digest. Zero effort from the reader.
 
 ---
 
 ## How It Works
 
-    Scrape (11 sources, concurrent)
+    Scrape (AI goes through the web for the latest news)
          |
     Summarize (AI, relevance scoring 0-1)
          |
@@ -30,27 +30,20 @@ PulseDesk runs automatically at 7am and 6pm, pulls the latest from curated Niger
          |
     Deliver (Gmail SMTP, twice daily)
 
-**The entire pipeline runs in under 40 seconds.**
+**The entire pipeline runs in about a minute.**
 
 ---
 
-## Sources
+## What It Covers
 
-| Category | Source | Coverage |
-|----------|--------|----------|
-| Tech | TechCabal | African tech ecosystem, startups, funding |
-| Tech | TechPoint Africa | African tech news, product launches |
-| Tech | TechNext | Nigerian tech innovation, digital economy |
-| Business | BusinessDay Nigeria | Nigerian economy, policy, regulation |
-| Business | The Guardian Nigeria | Nigerian business news, market updates |
-| Business | Punch Newspapers | Nigerian business, industry reports |
-| Finance | Nairametrics | Nigerian finance, bonds, stock market |
-| Finance | TheCable Business | Nigerian economic analysis, policy impact |
-| Finance | Premium Times Business | Nigerian business investigations, finance |
-| Entertainment | BellaNaija | Nigerian lifestyle, entertainment, culture |
-| Entertainment | Pulse Nigeria | Nigerian entertainment, celebrity news |
+| Category | Coverage |
+|----------|----------|
+| Tech | Startups, funding, product launches, digital economy |
+| Business | Economy, policy, market updates, industry reports |
+| Finance | Stocks, bonds, economic analysis, investment |
+| Entertainment | Lifestyle, culture, celebrity news |
 
-Sources are configurable. Add or remove any site by editing the scraper config.
+Coverage is configurable in the scraper config.
 
 ---
 
