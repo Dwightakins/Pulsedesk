@@ -244,7 +244,7 @@ if __name__ == "__main__":
     articles = aggregator.get_articles()
     print(f"Scraped {len(articles)} articles\n")
     
-    print("STEP 2: Summarizing with Mistral AI...")
+    print("STEP 2: Summarizing with Groq...")
     summarizer = ArticleSummarizer()
     summaries = summarizer.summarize_batch(articles)
     filtered = summarizer.filter_by_relevance(summaries, threshold=0.6)
